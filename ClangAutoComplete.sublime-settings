@@ -1,0 +1,13 @@
+{
+	/* Header files to fetch completion information from */
+	"include_dirs" : [
+					  "/usr/include",
+					  "$project_base_path/src"
+					  ],
+	/* Temporary file where current file will be written to */
+	"tmp_file_path" : "/tmp/auto_complete_tmp",
+	/* If file encoding was not detected, assume this instead */
+	"default_encoding" : "UTF-8",
+	/* What triggers auto-completion process (should be same as sublime's own settings */
+	"selectors" : [ ">","." ],
+}
