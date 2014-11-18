@@ -9,7 +9,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 	def __init__(self):
 		self.load_settings()
-		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : \[#([\s\S]+)#\]")
+		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : ([\s\S]+)")
 		self.file_ext = re.compile("[\s\S]+\.(\w+)")
 
 	def load_settings(self):
