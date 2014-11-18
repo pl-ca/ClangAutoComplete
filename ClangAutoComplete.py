@@ -10,6 +10,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	def __init__(self):
 		self.load_settings()
 		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : \[#([\s\S]+)#\]")
+		self.file_ext = re.compile("[\s\S]+\.(\w+)")
 
 	def load_settings(self):
 		# Variable $project_base_path in settings will be replaced by sublime's project path
@@ -46,9 +47,14 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		with open(self.tmp_file_path, "w", encoding=enc) as tmp_file:
 			tmp_file.write(body)
 
+		# Find file type (.c/.cpp) to set relevant clang flags 
+		file_ext = re.findall(self.file_ext, view.file_name())
+		cpp_flags = ""
+		if len(file_ext) > 0 and file_ext[0] == "cpp":
+			cpp_flags = "-x c++"
+
 		# Build clang command
 		clang_bin = "clang++"
-		cpp_flags = "-x c++"
 		clang_flags = "-cc1 " + cpp_flags + " -fsyntax-only"
 		clang_target = "-code-completion-at " + self.tmp_file_path+":"+str(line_pos)+":"+str(char_pos ) +" "+self.tmp_file_path
 		clang_includes=" -I ."
