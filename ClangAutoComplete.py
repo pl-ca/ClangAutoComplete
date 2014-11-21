@@ -7,8 +7,8 @@ import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
+	settings_loaded = False
 	def __init__(self):
-		self.load_settings()
 		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : ([\s\S]+)")
 		self.file_ext = re.compile("[\s\S]+\.(\w+)")
 
@@ -26,9 +26,11 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.include_dirs     = settings.get("include_dirs")
 		for i in range(0, len(self.include_dirs)):
 			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
+		settings.loaded = True
 
 	def on_query_completions(self, view, prefix, locations):
-		
+		if self.settings_loaded == False:
+			self.load_settings()
 		# Find exact Line:Column position of cursor for clang
 		pos = view.sel()[0].begin()
 		body = view.substr(sublime.Region(0, view.size()))
