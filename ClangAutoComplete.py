@@ -7,7 +7,6 @@ import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
-	settings_loaded = False
 	def __init__(self):
 		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : ([\s\S]+)")
 		self.file_ext = re.compile("[\s\S]+\.(\w+)")
@@ -20,23 +19,26 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		if sublime.active_window().project_data() is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
 
+		complete_all = settings.get("autocomplete_all")
+		if complete_all == "false":
+			self.complete_all = False
+		else:
+			self.complete_all = True
 		self.tmp_file_path    = settings.get("tmp_file_path")
 		self.default_encoding = settings.get("default_encoding")
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
 		for i in range(0, len(self.include_dirs)):
 			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
-		settings.loaded = True
 
 	def on_query_completions(self, view, prefix, locations):
-		if self.settings_loaded == False:
-			self.load_settings()
+		self.load_settings()
 		# Find exact Line:Column position of cursor for clang
 		pos = view.sel()[0].begin()
 		body = view.substr(sublime.Region(0, view.size()))
 
 		# Verify that character under the cursor is one allowed selector
-		if any(e in body[pos-1:pos] for e in self.selectors) == False:
+		if self.complete_all == False and any(e in body[pos-1:pos] for e in self.selectors) == False:
 			return []
 		line_pos = body[:pos].count('\n')+1
 		char_pos = pos-body.rfind("\n", 0, len(body[:pos]))
