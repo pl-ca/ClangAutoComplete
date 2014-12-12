@@ -2,7 +2,8 @@
 	/* Header files to fetch completion information from */
 	"include_dirs" : [
 					  "/usr/include",
-					  "$project_base_path/src"
+					  "$project_base_path/src",
+					  "/workspace/$project_name/src",
 					  ],
 	/* Temporary file where current file will be written to */
 	"tmp_file_path" : "/tmp/auto_complete_tmp",
@@ -18,5 +19,8 @@
 	 * if autocomplete_all is set to false,
 	 * What triggers auto-completion process (should be same as sublime's own settings 
 	 */
-	"selectors" : [ ">",".",":"],
+	"selectors" : [ ">","."],
+
+	/* Allow to change the binary or location of clang program */
+	"clang_binary" : "clang++"
 }

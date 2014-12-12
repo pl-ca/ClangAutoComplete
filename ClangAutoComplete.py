@@ -4,20 +4,31 @@
 #
 
 import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re
+import os.path as path
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
-	def __init__(self):
-		self.compl_regex = re.compile("COMPLETION: ([\s\S]+) : ([\s\S]+)")
-		self.file_ext = re.compile("[\s\S]+\.(\w+)")
+	compl_regex = re.compile("COMPLETION: ([^ ]+) : ([^\\n]+)")
+	file_ext = re.compile("[^\.]+\.([^\\n]+)")
+	project_name_regex = re.compile("([^\.]+).sublime-project")
+	settings_time = 0
 
 	def load_settings(self):
+		# Only load the settings if they have changed
+		settings_modified_time = path.getmtime(sublime.packages_path()+"/ClangAutoComplete/"+"ClangAutoComplete.sublime-settings")
+		if (self.settings_time == settings_modified_time):
+			return
+
 		# Variable $project_base_path in settings will be replaced by sublime's project path
 		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 		
 		project_path=""
 		if sublime.active_window().project_data() is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
+		res = re.findall(self.project_name_regex,ntpath.basename(sublime.active_window().project_file_name()))
+		project_name=""
+		if len(res) > 0:
+			project_name = res[0]
 
 		complete_all = settings.get("autocomplete_all")
 		if complete_all == "false":
@@ -28,8 +39,10 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.default_encoding = settings.get("default_encoding")
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
+		self.clang_binary     = settings.get("clang_binary")
 		for i in range(0, len(self.include_dirs)):
 			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
+			self.include_dirs[i] = re.sub("(\$project_name)", project_name, self.include_dirs[i])
 
 	def on_query_completions(self, view, prefix, locations):
 		self.load_settings()
@@ -58,7 +71,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			cpp_flags = "-x c++"
 
 		# Build clang command
-		clang_bin = "clang++"
+		clang_bin = self.clang_binary
 		clang_flags = "-cc1 " + cpp_flags + " -fsyntax-only"
 		clang_target = "-code-completion-at " + self.tmp_file_path+":"+str(line_pos)+":"+str(char_pos ) +" "+self.tmp_file_path
 		clang_includes=" -I ."
