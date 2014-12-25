@@ -13,6 +13,12 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
+	def on_post_save_async(self, view):
+		self.load_settings()
+
+	def on_activated_async(self, view):
+		if view.file_name() is not None:
+			self.load_settings()
 
 	def load_settings(self):
 		# Only load the settings if they have changed
@@ -58,8 +64,6 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 					self.include_dirs.append(os.path.join(root, dirname));
 
 	def on_query_completions(self, view, prefix, locations):
-		self.load_settings()
-
 		#dont trigger on non-c source file
 		file_ext = re.findall(self.file_ext, view.file_name())
 		allow = 0;
@@ -103,6 +107,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		# Execute clang command, exit 0 to suppress error from check_output()
 		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes
 		output = subprocess.check_output(clang_cmd+";exit 0", shell=True)
+		print(clang_cmd)
 
 		# Process clang output, find COMPLETION lines and return them with a little formating
 		output_text = ''.join(map(chr,output))
