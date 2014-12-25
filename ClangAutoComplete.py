@@ -8,6 +8,7 @@ import os.path as path
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
+	compl_sugar = re.compile("[#<>\[\]]")
 	compl_regex = re.compile("COMPLETION: ([^ ]+) : ([^\\n]+)")
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
@@ -25,7 +26,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		project_path=""
 		if sublime.active_window().project_data() is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
-		
+
 		proj_filename = sublime.active_window().project_file_name()
 		project_name=""
 		if proj_filename is not None:
@@ -38,17 +39,36 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			self.complete_all = False
 		else:
 			self.complete_all = True
+
 		self.tmp_file_path    = settings.get("tmp_file_path")
 		self.default_encoding = settings.get("default_encoding")
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
 		self.clang_binary     = settings.get("clang_binary")
+		self.completion_sugar     = settings.get("completion_sugar")
+		self.completion_file_extensions     = settings.get("completion_file_extensions")
 		for i in range(0, len(self.include_dirs)):
 			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
 			self.include_dirs[i] = re.sub("(\$project_name)", project_name, self.include_dirs[i])
 
+		#recurse from root folder looking for src/ folders
+		for root, dirnames, filenames in os.walk(project_path):
+			for dirname in dirnames:
+				if dirname == "src":
+					self.include_dirs.append(os.path.join(root, dirname));
+
 	def on_query_completions(self, view, prefix, locations):
 		self.load_settings()
+
+		#dont trigger on non-c source file
+		file_ext = re.findall(self.file_ext, view.file_name())
+		allow = 0;
+		for i in range(0, len(self.completion_file_extensions)):
+			if self.completion_file_extensions[i] == file_ext[0]:
+				allow = 1
+		if not allow:
+			return []
+		
 		# Find exact Line:Column position of cursor for clang
 		pos = view.sel()[0].begin()
 		body = view.substr(sublime.Region(0, view.size()))
@@ -58,7 +78,6 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			return []
 		line_pos = body[:pos].count('\n')+1
 		char_pos = pos-body.rfind("\n", 0, len(body[:pos]))
-
 
 		# Create temporary file name that reflects what user is currently typing
 		enc = view.encoding()
@@ -96,11 +115,15 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 				continue
 			if len(tmp_res[0][0]) > longest_len:
 				longest_len = len(tmp_res[0][0])
-			result.append([tmp_res[0][1], tmp_res[0][0]])
+
+			#COMPLETION lines format sugar
+			compl_line = tmp_res[0][1];
+			if self.completion_sugar == "true":
+				compl_line = compl_line.replace("]", " ")
+				compl_line = re.sub(self.compl_sugar, "", compl_line)
+
+			result.append([compl_line, tmp_res[0][0]])
 
 		for tuple in result:
 			tuple[0] = tuple[1].ljust(longest_len) + " - " + tuple[0]
 		return (result, sublime.INHIBIT_WORD_COMPLETIONS)
-
-
-
