@@ -25,10 +25,13 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		project_path=""
 		if sublime.active_window().project_data() is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
-		res = re.findall(self.project_name_regex,ntpath.basename(sublime.active_window().project_file_name()))
+		
+		proj_filename = sublime.active_window().project_file_name()
 		project_name=""
-		if len(res) > 0:
-			project_name = res[0]
+		if proj_filename is not None:
+			res = re.findall(self.project_name_regex,ntpath.basename(sublime.active_window().project_file_name()))
+			if len(res) > 0:
+				project_name = res[0]
 
 		complete_all = settings.get("autocomplete_all")
 		if complete_all == "false":
