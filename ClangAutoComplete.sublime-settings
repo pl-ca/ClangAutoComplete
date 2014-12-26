@@ -22,6 +22,8 @@
 	*/
 	"autocomplete_all" : "false",
 	"completion_sugar" : "true",
+	//If set to true will always show the go-to dropdown box, even when one result
+	"goto_single_popupbox" : "false",
 	/*
 	* if autocomplete_all is set to false,
 	* What triggers auto-completion process (should be same as sublime's own settings

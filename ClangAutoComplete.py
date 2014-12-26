@@ -79,14 +79,22 @@ class GotoDefinitiontwoCommand(sublime_plugin.WindowCommand):
 		defResults = [];
 		for c in node.get_children():
 			if c.is_definition():
+				#print(c.kind)
 				#print (c.get_definition().displayname)
-				if c.displayname.decode('utf-8').find(searchterm) == 0:
+				disname = c.displayname.decode('utf-8')
+				funccomp = 1
+				if len(disname) > len(searchterm) and disname[len(searchterm)] != "(":
+					funccomp = 0
+				if disname.find(searchterm) == 0 and funccomp:
 					opencommand = "{0}:{1}:{2}".format(c.location.file.name.decode('utf-8'), c.location.line, c.location.column)
 					defResults.append([opencommand, c.get_definition().displayname.decode('utf-8')])
+		
+		if len(defResults) == 0:
+			return;
 
-		if len(defResults) == 1:
+		if settings.get("goto_single_popupbox") != "true" and len(defResults) == 1:
 			nview.window().open_file(defResults[0][0], sublime.ENCODED_POSITION)
-		elif len(defResults) > 1:
+		else:
 			items = [];
 			for c in defResults:
 				items.append(c[1] + "   " + c[0])
@@ -100,6 +108,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
+	first_load = 0
 
 	def on_post_save_async(self, view):
 		self.load_settings(view)
@@ -153,6 +162,9 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			self.include_dirs.append(os.path.dirname(view.file_name()));
 			
 	def on_query_completions(self, view, prefix, locations):
+		if self.first_load == 0:
+			self.load_settings(view)
+			first_load = 1
 		#dont trigger on non-c source file
 		file_ext = re.findall(self.file_ext, view.file_name())
 		allow = 0;
