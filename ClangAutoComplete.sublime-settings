@@ -1,26 +1,34 @@
 {
 	/* Header files to fetch completion information from */
 	"include_dirs" : [
-					  "/usr/include",
-					  "$project_base_path/src",
-					  "/workspace/$project_name/src",
-					  ],
+		"/usr/include",
+		"/usr/include/x86_64-linux-gnu/",
+		"/usr/lib/llvm-3.5/lib/clang/3.5.0/include/",
+		"/usr/include/c++/4.9/",
+	],
+	"libclangso_path" : "/usr/lib/llvm-3.5/lib/libclang.so",
+	/* Trigger completion for file extensions */
+	"completion_file_extensions" : [
+		"cpp", "c", "h", "hpp"
+	],
 	/* Temporary file where current file will be written to */
 	"tmp_file_path" : "/tmp/auto_complete_tmp",
 	/* If file encoding was not detected, assume this instead */
 	"default_encoding" : "UTF-8",
-	/* 
-	 * If set to "true", auto-complete is always on, it will provide suggestions for any key press,
-	 * regardless what triggers are configured in "selectors".
-	 * It will slow down sublime, essentially re-compiling the file for every key press.
-	 */
+	/*
+	* If set to "true", auto-complete is always on, it will provide suggestions for any key press,
+	* regardless what triggers are configured in "selectors".
+	* It will slow down sublime, essentially re-compiling the file for every key press.
+	*/
 	"autocomplete_all" : "false",
-	/* 
-	 * if autocomplete_all is set to false,
-	 * What triggers auto-completion process (should be same as sublime's own settings 
-	 */
-	"selectors" : [ ">","."],
-
+	"completion_sugar" : "true",
+	//If set to true will always show the go-to dropdown box, even when one result
+	"goto_single_popupbox" : "false",
+	/*
+	* if autocomplete_all is set to false,
+	* What triggers auto-completion process (should be same as sublime's own settings
+	*/
+	"selectors" : [ ">",".",":"],
 	/* Allow to change the binary or location of clang program */
 	"clang_binary" : "clang++"
 }
