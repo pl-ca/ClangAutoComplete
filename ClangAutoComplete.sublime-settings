@@ -2,11 +2,11 @@
 	/* Header files to fetch completion information from */
 	"include_dirs" : [
 		"/usr/include",
-       /* other paths here ex:
-        * "/usr/include/x86_64-linux-gnu/",
-        * "/usr/lib/llvm-3.5/lib/clang/3.5.0/include/"
-        */
+		"/usr/include/x86_64-linux-gnu/",
+		"/usr/lib/llvm-3.5/lib/clang/3.5.0/include/",
+		"/usr/include/c++/4.9/",
 	],
+	"libclangso_path" : "/usr/lib/llvm-3.5/lib/libclang.so",
 	/* Trigger completion for file extensions */
 	"completion_file_extensions" : [
 		"cpp", "c", "h", "hpp"

@@ -1,10 +1,97 @@
-#
-# Provides completion suggestions for C/C++ languages
-# based on clang output
-#
-
-import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re
+import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re, sys
 import os.path as path
+from os.path import dirname, realpath, join
+
+MY_PLUGIN = dirname(realpath(__file__))
+sys.path.append(join(MY_PLUGIN, "deps"))
+
+import clang.cindex as cindex
+
+
+file_ext_re = re.compile("[^\.]+\.([^\\n]+)")
+# Variable $project_base_path in settings will be replaced by sublime's project path
+settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
+
+try:
+	cindex.Config.set_library_file(settings.get("libclangso_path"))
+except:
+	print("error here is fine")
+
+
+class Util():
+	def CursorWord(nview):
+		for region in nview.sel():
+			if region.begin() == region.end():
+				word = nview.word(region)
+			else:
+				word = region
+			if not word.empty():
+				keyword = nview.substr(word)
+				searchterm = keyword
+		return searchterm
+
+	def EnforceFileExtension(view):
+		#dont trigger on non-c source file
+		file_ext = re.findall(file_ext_re, view.file_name())
+		allow = 0;
+		file_xts = settings.get("completion_file_extensions")
+		for i in range(0, len(file_xts)):
+			if file_xts[i] == file_ext[0]:
+				allow = 1
+		return allow
+
+	def find_typerefsFormat(node, typename, resTable):
+		try:
+			if node.kind.is_reference:
+				if node.displayname.decode('utf-8').find(typename) == 0:
+					print(node.spelling)
+					opencommand = "{0}:{1}:{2}".format(node.location.file.name.decode('utf-8'), node.location.line, node.location.column)
+					print(opencommand)
+					#defResults.append([opencommand, c.get_definition().displayname.decode('utf-8')])
+		except:
+			print("unknown cursor kind, update the python bindings, but no point as they are too slow need to move to unmanaged solution")
+
+		for c in node.get_children():
+			Util.find_typerefsFormat(c, typename, resTable)
+
+class GotoDefinitiontwoCommand(sublime_plugin.WindowCommand):
+	resMenu = [];
+	def on_resmenu_done(self, index):
+		if index == -1:
+			return
+		nview = self.window.active_view()
+		nview.window().open_file(self.resMenu[index][0], sublime.ENCODED_POSITION)
+
+	def run(self):
+		nview = self.window.active_view()
+		if nview.file_name() is None:
+			return
+		if Util.EnforceFileExtension(nview) == 0:
+			return
+
+		searchterm = Util.CursorWord(nview);
+		if searchterm == "":
+			return
+
+		index = cindex.Index.create()
+		tu = index.parse(nview.file_name())
+		node = tu.cursor
+		defResults = [];
+		for c in node.get_children():
+			if c.is_definition():
+				#print (c.get_definition().displayname)
+				if c.displayname.decode('utf-8').find(searchterm) == 0:
+					opencommand = "{0}:{1}:{2}".format(c.location.file.name.decode('utf-8'), c.location.line, c.location.column)
+					defResults.append([opencommand, c.get_definition().displayname.decode('utf-8')])
+
+		if len(defResults) == 1:
+			nview.window().open_file(defResults[0][0], sublime.ENCODED_POSITION)
+		elif len(defResults) > 1:
+			items = [];
+			for c in defResults:
+				items.append(c[1] + "   " + c[0])
+			self.resMenu = defResults;
+			nview.show_popup_menu(items, self.on_resmenu_done)
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
@@ -13,21 +100,19 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
+
 	def on_post_save_async(self, view):
-		self.load_settings()
+		self.load_settings(view)
 
 	def on_activated_async(self, view):
 		if view.file_name() is not None:
-			self.load_settings()
+			self.load_settings(view)
 
-	def load_settings(self):
+	def load_settings(self, view):
 		# Only load the settings if they have changed
 		settings_modified_time = path.getmtime(sublime.packages_path()+"/ClangAutoComplete/"+"ClangAutoComplete.sublime-settings")
 		if (self.settings_time == settings_modified_time):
 			return
-
-		# Variable $project_base_path in settings will be replaced by sublime's project path
-		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 		
 		project_path=""
 		if sublime.active_window().project_data() is not None:
@@ -63,6 +148,10 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 				if dirname == "src":
 					self.include_dirs.append(os.path.join(root, dirname));
 
+		#add current dir
+		if view.file_name() is not None:
+			self.include_dirs.append(os.path.dirname(view.file_name()));
+			
 	def on_query_completions(self, view, prefix, locations):
 		#dont trigger on non-c source file
 		file_ext = re.findall(self.file_ext, view.file_name())
@@ -76,10 +165,21 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		# Find exact Line:Column position of cursor for clang
 		pos = view.sel()[0].begin()
 		body = view.substr(sublime.Region(0, view.size()))
+		cursorchar = body[pos-1:pos]
 
 		# Verify that character under the cursor is one allowed selector
-		if self.complete_all == False and any(e in body[pos-1:pos] for e in self.selectors) == False:
+		allowcompletion = 1
+		if self.complete_all == False:
+			allowcompletion = 0
+			for e in self.selectors:
+				if e == cursorchar:
+					if cursorchar == ":" and body[pos-2:pos-1] != ":":
+						return ([], sublime.INHIBIT_WORD_COMPLETIONS)
+					allowcompletion = 1
+
+		if allowcompletion == 0:
 			return []
+
 		line_pos = body[:pos].count('\n')+1
 		char_pos = pos-body.rfind("\n", 0, len(body[:pos]))
 
@@ -124,10 +224,18 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			#COMPLETION lines format sugar
 			compl_line = tmp_res[0][1];
 			if self.completion_sugar == "true":
+				compl_line_head = tmp_res[0][0];
+				if (compl_line_head == "operator="):
+					continue;
+				if (compl_line_head[0] == "~"):
+					continue;
+				if (tmp_res[0][1].find("::") != -1):
+					continue;
+
 				compl_line = compl_line.replace("]", " ")
 				compl_line = re.sub(self.compl_sugar, "", compl_line)
 
-			result.append([compl_line, tmp_res[0][0]])
+			result.append([compl_line, compl_line_head])
 
 		for tuple in result:
 			tuple[0] = tuple[1].ljust(longest_len) + " - " + tuple[0]
