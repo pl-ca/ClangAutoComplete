@@ -6,7 +6,7 @@
 					  "/workspace/$project_name/src",
 					  ],
 	/* Temporary file where current file will be written to */
-	"tmp_file_path" : "/tmp/auto_complete_tmp",
+	// "tmp_file_path" : "/tmp/auto_complete_tmp",
 	/* If file encoding was not detected, assume this instead */
 	"default_encoding" : "UTF-8",
 	/* 
@@ -22,5 +22,6 @@
 	"selectors" : [ ">","."],
 
 	/* Allow to change the binary or location of clang program */
+	// "clang_binary" : "\"C:\\Program Files (x86)\\LLVM\\bin\\clang++\""
 	"clang_binary" : "clang++"
 }

@@ -3,7 +3,7 @@
 # based on clang output
 #
 
-import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re
+import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re, tempfile
 import os.path as path
 
 class ClangAutoComplete(sublime_plugin.EventListener):
@@ -38,7 +38,9 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			self.complete_all = False
 		else:
 			self.complete_all = True
-		self.tmp_file_path    = settings.get("tmp_file_path")
+		self.tmp_file_path = settings.get("tmp_file_path")
+		if settings.get("tmp_file_path") is None:
+			self.tmp_file_path    = tempfile.gettempdir() + "/auto_complete_tmp"
 		self.default_encoding = settings.get("default_encoding")
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
@@ -83,11 +85,16 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		# Execute clang command, exit 0 to suppress error from check_output()
 		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes
-		output = subprocess.check_output(clang_cmd+";exit 0", shell=True)
-
+		try:
+			output = subprocess.check_output(clang_cmd, shell=True)
+			output_text = ''.join(map(chr,output))
+		except subprocess.CalledProcessError as e:
+			output_text = str(e.output)
 		# Process clang output, find COMPLETION lines and return them with a little formating
-		output_text = ''.join(map(chr,output))
-		output_lines = output_text.split('\n')
+		if '\n' in output_text:
+			output_lines = output_text.split('\n')
+		else:
+			output_lines = output_text.split('\\n')
 		result = []
 		longest_len = 0
 		for line in output_lines:
