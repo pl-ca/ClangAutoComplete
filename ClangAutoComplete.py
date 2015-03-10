@@ -89,12 +89,9 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			output = subprocess.check_output(clang_cmd, shell=True)
 			output_text = ''.join(map(chr,output))
 		except subprocess.CalledProcessError as e:
-			output_text = str(e.output)
+			output_text = e.output.decode("utf-8")
 		# Process clang output, find COMPLETION lines and return them with a little formating
-		if '\n' in output_text:
-			output_lines = output_text.split('\n')
-		else:
-			output_lines = output_text.split('\\n')
+		output_lines = output_text.splitlines()
 		result = []
 		longest_len = 0
 		for line in output_lines:
