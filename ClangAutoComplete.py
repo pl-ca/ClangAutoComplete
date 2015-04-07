@@ -25,6 +25,8 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		project_path=""
 		if sublime.active_window().project_data() is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
+		if os.name == "nt":
+			project_path = re.sub("(\\\\)", "\\\\\\\\", project_path)
 		
 		proj_filename = sublime.active_window().project_file_name()
 		project_name=""
@@ -48,6 +50,10 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		for i in range(0, len(self.include_dirs)):
 			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
 			self.include_dirs[i] = re.sub("(\$project_name)", project_name, self.include_dirs[i])
+			if os.name == "nt":
+				self.include_dirs[i] = re.sub("(/)", "\\\\", self.include_dirs[i])
+				if "\"" not in self.include_dirs[i]:
+					self.include_dirs[i] = "\"" + self.include_dirs[i] + "\""
 
 	def on_query_completions(self, view, prefix, locations):
 		self.load_settings()
@@ -105,6 +111,5 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		for tuple in result:
 			tuple[0] = tuple[1].ljust(longest_len) + " - " + tuple[0]
 		return (result, sublime.INHIBIT_WORD_COMPLETIONS)
-
 
 
