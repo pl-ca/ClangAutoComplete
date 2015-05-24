@@ -10,6 +10,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 	compl_regex = re.compile("COMPLETION: ([^ ]+) : ([^\\n]+)")
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
+	syntax_regex = re.compile("\/([^\/]+)\.tmLanguage")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
 
@@ -77,16 +78,31 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		with open(self.tmp_file_path, "w", encoding=enc) as tmp_file:
 			tmp_file.write(body)
 
-		# Find file type (.c/.cpp) to set relevant clang flags
-		cpp_flags = ""
-		if view.file_name() is not None:
+		# Find language used (C vs C++) based first on 
+		# sublime's syntax settings (supporting "C" and "C++").
+		# If we do not recognize the current settings, try to
+		# decide based on file extension.
+		syntax_flags = None
+		c_flags = ""
+		cpp_flags = "-x c++"
+		if view.settings().get('syntax') is not None:
+			syntax = re.findall(self.syntax_regex, view.settings().get('syntax'))
+			if len(syntax) > 0:
+				if syntax[0] == "C++":
+					syntax_flags = cpp_flags
+				elif syntax[0] == "C":
+					syntax_flags = c_flags
+		if syntax_flags is None and \
+			view.file_name() is not None:
 			file_ext = re.findall(self.file_ext, view.file_name())
 			if len(file_ext) > 0 and file_ext[0] == "cpp":
-				cpp_flags = "-x c++"
+				syntax_flags = cpp_flags
+		if syntax_flags is None:
+			syntax_flags = c_flags
 
 		# Build clang command
 		clang_bin = self.clang_binary
-		clang_flags = "-cc1 " + cpp_flags + " -fsyntax-only"
+		clang_flags = "-cc1 " + syntax_flags + " -fsyntax-only"
 		clang_target = "-code-completion-at " + self.tmp_file_path+":"+str(line_pos)+":"+str(char_pos ) +" "+self.tmp_file_path
 		clang_includes=" -I ."
 		for dir in self.include_dirs:
