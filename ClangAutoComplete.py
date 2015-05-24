@@ -23,10 +23,12 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 		
 		project_path=""
-		if sublime.active_window().project_data() is not None:
+		if sublime.active_window().project_data() is not None \
+			and sublime.active_window().project_data().get("folders") is not None \
+			and sublime.active_window().project_data().get("folders")[0].get("path") is not None:
 			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
-		if os.name == "nt":
-			project_path = re.sub("(\\\\)", "\\\\\\\\", project_path)
+			if os.name == "nt":
+				project_path = re.sub("(\\\\)", "\\\\\\\\", project_path)
 		
 		proj_filename = sublime.active_window().project_file_name()
 		project_name=""
@@ -75,11 +77,12 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		with open(self.tmp_file_path, "w", encoding=enc) as tmp_file:
 			tmp_file.write(body)
 
-		# Find file type (.c/.cpp) to set relevant clang flags 
-		file_ext = re.findall(self.file_ext, view.file_name())
+		# Find file type (.c/.cpp) to set relevant clang flags
 		cpp_flags = ""
-		if len(file_ext) > 0 and file_ext[0] == "cpp":
-			cpp_flags = "-x c++"
+		if view.file_name() is not None:
+			file_ext = re.findall(self.file_ext, view.file_name())
+			if len(file_ext) > 0 and file_ext[0] == "cpp":
+				cpp_flags = "-x c++"
 
 		# Build clang command
 		clang_bin = self.clang_binary
