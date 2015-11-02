@@ -65,7 +65,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		body = view.substr(sublime.Region(0, view.size()))
 
 		# Verify that character under the cursor is one allowed selector
-		if self.complete_all == False and any(e in body[pos-1:pos] for e in self.selectors) == False:
+		if self.complete_all == False and any(e in body[pos-len(e):pos] for e in self.selectors) == False:
 			return []
 		line_pos = body[:pos].count('\n')+1
 		char_pos = pos-body.rfind("\n", 0, len(body[:pos]))
