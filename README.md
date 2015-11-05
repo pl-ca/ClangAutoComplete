@@ -7,7 +7,7 @@ Sublime Text 3 plugin that offers auto-completion of C/C++ structure members or 
 
 ##Installation
 
-1. Install "clang".
+1. Install "clang". Note that some people reported issue with clang 3.5.2 when compiled from Cygwin. If you are facing issues on Windows, try to download directly from the official [clang website](http://llvm.org/releases/download.html).
 2. Clone this repository and put it in your Sublime's packages directory (if manually installing from git).
 3. Edit the settings to your needs.
 4. Make sure Sublime's own auto-complete settings are properly configured, I've had trouble with mine.
