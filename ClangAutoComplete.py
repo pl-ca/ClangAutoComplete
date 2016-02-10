@@ -10,7 +10,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 	compl_regex = re.compile("COMPLETION: ([^ ]+) : ([^\\n]+)")
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
-	syntax_regex = re.compile("\/([^\/]+)\.tmLanguage")
+	syntax_regex = re.compile("\/([^\/]+)\.(?:tmLanguage|sublime-syntax)")
 	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
 
