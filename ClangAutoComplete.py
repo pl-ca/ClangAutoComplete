@@ -37,6 +37,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			res = re.findall(self.project_name_regex,ntpath.basename(sublime.active_window().project_file_name()))
 			if len(res) > 0:
 				project_name = res[0]
+			project_path = os.path.join(os.path.dirname(proj_filename), project_path)
 
 		complete_all = settings.get("autocomplete_all")
 		if complete_all == "false":
