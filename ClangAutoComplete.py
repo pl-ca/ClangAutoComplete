@@ -11,53 +11,53 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	compl_regex = re.compile("COMPLETION: ([^ ]+) : ([^\\n]+)")
 	file_ext = re.compile("[^\.]+\.([^\\n]+)")
 	syntax_regex = re.compile("\/([^\/]+)\.(?:tmLanguage|sublime-syntax)")
-	project_name_regex = re.compile("([^\.]+).sublime-project")
 	settings_time = 0
+
+	def to_bool(self, str_flag):
+		return str_flag == "true"
 
 	def load_settings(self):
 		# Only load the settings if they have changed
-		settings_modified_time = path.getmtime(sublime.packages_path()+"/ClangAutoComplete/"+"ClangAutoComplete.sublime-settings")
+		settings_modified_time = path.getmtime(
+		                                       path.join(sublime.packages_path(),
+		                                                 "ClangAutoComplete",
+		                                                 "ClangAutoComplete.sublime-settings"))
 		if (self.settings_time == settings_modified_time):
 			return
 
-		# Variable $project_base_path in settings will be replaced by sublime's project path
 		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
-		
-		project_path=""
-		if sublime.active_window().project_data() is not None \
-			and sublime.active_window().project_data().get("folders") is not None \
-			and sublime.active_window().project_data().get("folders")[0].get("path") is not None:
-			project_path = (sublime.active_window().project_data().get("folders")[0].get("path"))
-			if os.name == "nt":
-				project_path = re.sub("(\\\\)", "\\\\\\\\", project_path)
-		
-		proj_filename = sublime.active_window().project_file_name()
-		project_name=""
-		if proj_filename is not None:
-			res = re.findall(self.project_name_regex,ntpath.basename(sublime.active_window().project_file_name()))
-			if len(res) > 0:
-				project_name = res[0]
-			project_path = os.path.join(os.path.dirname(proj_filename), project_path)
 
-		complete_all = settings.get("autocomplete_all")
-		if complete_all == "false":
-			self.complete_all = False
-		else:
-			self.complete_all = True
+		# Variable $project_base_path in settings will be replaced by sublime's project path
+		variables = sublime.active_window().extract_variables()
+		project_path = variables['folder']
+		project_name = variables['project_base_name']
+		file_parent_folder = path.join(path.dirname(variables['file']), "..")
+
+		include_parent_folder = self.to_bool(settings.get("include_file_parent_folder"))
+		self.complete_all = self.to_bool(settings.get("autocomplete_all"))
+		self.verbose = self.to_bool(settings.get("verbose"))
 		self.tmp_file_path = settings.get("tmp_file_path")
 		if settings.get("tmp_file_path") is None:
-			self.tmp_file_path    = tempfile.gettempdir() + "/auto_complete_tmp"
+			self.tmp_file_path = path.join(tempfile.gettempdir(), "auto_complete_tmp")
 		self.default_encoding = settings.get("default_encoding")
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
 		self.clang_binary     = settings.get("clang_binary")
-		for i in range(0, len(self.include_dirs)):
-			self.include_dirs[i] = re.sub("(\$project_base_path)", project_path, self.include_dirs[i])
-			self.include_dirs[i] = re.sub("(\$project_name)", project_name, self.include_dirs[i])
-			if os.name == "nt":
-				self.include_dirs[i] = re.sub("(/)", "\\\\", self.include_dirs[i])
-				if "\"" not in self.include_dirs[i]:
-					self.include_dirs[i] = "\"" + self.include_dirs[i] + "\""
+
+		for include_dir in self.include_dirs:
+			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
+			include_dir = re.sub("(\$project_name)", project_name, include_dir)
+			include_dir = os.path.abspath(include_dir)
+
+		if (self.verbose):
+			print("project_base_name = {}".format(variables['project_base_name']))
+			print("folder = {}".format(variables['folder']))
+			print("file = {}".format(variables['file']))
+			print("file_parent_folder = {}".format(file_parent_folder))
+
+		if (include_parent_folder):
+			self.include_dirs.append(file_parent_folder)
+
 
 	def on_query_completions(self, view, prefix, locations):
 		self.load_settings()
@@ -79,7 +79,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		with open(self.tmp_file_path, "w", encoding=enc) as tmp_file:
 			tmp_file.write(body)
 
-		# Find language used (C vs C++) based first on 
+		# Find language used (C vs C++) based first on
 		# sublime's syntax settings (supporting "C" and "C++").
 		# If we do not recognize the current settings, try to
 		# decide based on file extension.
@@ -111,6 +111,8 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		# Execute clang command, exit 0 to suppress error from check_output()
 		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes
+		if (self.verbose):
+			print("clang command: {}".format(clang_cmd))
 		try:
 			output = subprocess.check_output(clang_cmd, shell=True)
 			output_text = ''.join(map(chr,output))
