@@ -27,11 +27,19 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 
-		# Variable $project_base_path in settings will be replaced by sublime's project path
+		# initialize these to nothing in case they are not present in the variables
+		project_path=""
+		project_name=""
+		file_parent_folder=""
+
+		# these variables should be populated by sublime text
 		variables = sublime.active_window().extract_variables()
-		project_path = variables['folder']
-		project_name = variables['project_base_name']
-		file_parent_folder = path.join(path.dirname(variables['file']), "..")
+		if ('folder' in variables):
+			project_path = variables['folder']
+		if ('project_base_name' in variables):
+			project_name = variables['project_base_name']
+		if ('file' in variables):
+			file_parent_folder = path.join(path.dirname(variables['file']), "..")
 
 		include_parent_folder = self.to_bool(settings.get("include_file_parent_folder"))
 		self.complete_all = self.to_bool(settings.get("autocomplete_all"))
@@ -50,9 +58,8 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			include_dir = os.path.abspath(include_dir)
 
 		if (self.verbose):
-			print("project_base_name = {}".format(variables['project_base_name']))
-			print("folder = {}".format(variables['folder']))
-			print("file = {}".format(variables['file']))
+			print("project_base_name = {}".format(project_name))
+			print("folder = {}".format(project_path))
 			print("file_parent_folder = {}".format(file_parent_folder))
 
 		if (include_parent_folder):
