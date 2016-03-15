@@ -20,7 +20,14 @@
                                 {
                                     "file": "${packages}/ClangAutoComplete/ClangAutoComplete.sublime-settings"
                                 },
-                                "caption": "Settings"
+                                "caption": "Settings - Default"
+                            },
+                            {
+                                "command": "open_file", "args":
+                                {
+                                    "file": "${packages}/User/ClangAutoComplete.sublime-settings"
+                                },
+                                "caption": "Settings - User"
                             }
                         ]
                     }
