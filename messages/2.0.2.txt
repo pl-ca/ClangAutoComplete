@@ -1,0 +1,4 @@
+Last release caused an issue in the include directory settings. The variables used were not substituted.
+ - $project_base_path
+ - $project_name
+This update only resolves that issue.
