@@ -51,6 +51,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
 		self.clang_binary     = settings.get("clang_binary")
+		self.std_flag     		= settings.get("std_flag")
 
 		for include_dir in self.include_dirs:
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
@@ -110,7 +111,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		# Build clang command
 		clang_bin = self.clang_binary
-		clang_flags = "-cc1 " + syntax_flags + " -fsyntax-only"
+		clang_flags = "-cc1 " + self.std_flag + " " + syntax_flags + " -fsyntax-only"
 		clang_target = "-code-completion-at " + self.tmp_file_path+":"+str(line_pos)+":"+str(char_pos ) +" "+self.tmp_file_path
 		clang_includes=" -I ."
 		for dir in self.include_dirs:
