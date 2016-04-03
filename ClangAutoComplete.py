@@ -51,7 +51,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.selectors        = settings.get("selectors")
 		self.include_dirs     = settings.get("include_dirs")
 		self.clang_binary     = settings.get("clang_binary")
-		self.std_flag     		= settings.get("std_flag")
+		self.std_flag         = settings.get("std_flag")
 
 		if (not self.std_flag):
 			self.std_flag = "-std=c++11"
