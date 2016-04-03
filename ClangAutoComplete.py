@@ -100,7 +100,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		# decide based on file extension.
 		syntax_flags = None
 		c_flags = ""
-		cpp_flags = "-x c++"
+		cpp_flags = self.std_flag + " -x c++"
 		if view.settings().get('syntax') is not None:
 			syntax = re.findall(self.syntax_regex, view.settings().get('syntax'))
 			if len(syntax) > 0:
@@ -118,7 +118,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		# Build clang command
 		clang_bin = self.clang_binary
-		clang_flags = "-cc1 " + self.std_flag + " " + syntax_flags + " -fsyntax-only"
+		clang_flags = "-cc1 " + syntax_flags + " -fsyntax-only"
 		clang_target = "-code-completion-at " + self.tmp_file_path+":"+str(line_pos)+":"+str(char_pos ) +" "+self.tmp_file_path
 		clang_includes=" -I ."
 		for dir in self.include_dirs:
