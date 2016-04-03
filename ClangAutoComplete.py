@@ -53,6 +53,11 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.clang_binary     = settings.get("clang_binary")
 		self.std_flag     		= settings.get("std_flag")
 
+		if (not self.std_flag):
+			self.std_flag = "-std=c++11"
+			if (self.verbose):
+				print("set std_flag to default: '{}'".format(self.std_flag))
+
 		for i, include_dir in enumerate(self.include_dirs):
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
 			include_dir = re.sub("(\$project_name)", project_name, include_dir)
@@ -63,6 +68,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			print("project_base_name = {}".format(project_name))
 			print("folder = {}".format(project_path))
 			print("file_parent_folder = {}".format(file_parent_folder))
+			print("std_flag = {}".format(self.std_flag))
 
 		if (include_parent_folder):
 			self.include_dirs.append(file_parent_folder)
