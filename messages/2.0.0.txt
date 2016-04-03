@@ -1,0 +1,7 @@
+Bad news: this update probably deleted your settings. I'm verry sorry about that but I could not figure out a way around that.
+
+Good news: this should be the last time this occurs. In this latest version there are two settings files as for most ST plugins, default and user. Please modify the user settings from now on, and it should not be overwritten with further updates.
+
+This updates features a number of small improvements and cleanups that should ideally be transparent to you.
+
+If you find any more issues, please report them on github :)

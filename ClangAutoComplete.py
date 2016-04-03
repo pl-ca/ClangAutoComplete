@@ -53,10 +53,11 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.clang_binary     = settings.get("clang_binary")
 		self.std_flag     		= settings.get("std_flag")
 
-		for include_dir in self.include_dirs:
+		for i, include_dir in enumerate(self.include_dirs):
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
 			include_dir = re.sub("(\$project_name)", project_name, include_dir)
 			include_dir = os.path.abspath(include_dir)
+			self.include_dirs[i] = include_dir
 
 		if (self.verbose):
 			print("project_base_name = {}".format(project_name))
