@@ -1,10 +1,10 @@
 {
 	/* Header files to fetch completion information from */
 	"include_dirs" : [
-					  "/usr/include",
-					  "$project_base_path/src",
-					  "/workspace/$project_name/src",
-					  ],
+						"/usr/include",
+						"$project_base_path/src",
+						"/workspace/$project_name/src",
+						],
 	/* Temporary file where current file will be written to */
 	// "tmp_file_path" : "/tmp/auto_complete_tmp",
 	/* If file encoding was not detected, assume this instead */
@@ -37,5 +37,8 @@
 
 	/* Allow to change the binary or location of clang program */
 	// "clang_binary" : "\"C:\\Program Files (x86)\\LLVM\\bin\\clang++\""
-	"clang_binary" : "clang++"
+	"clang_binary" : "clang++",
+
+	/* setting the standard library flag. */
+	"std_flag" : "-std=c++11"
 }
