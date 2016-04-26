@@ -60,6 +60,7 @@ Here is my C.sublime-settings as an example
  - autocomplete_all: Trigger auto-completion on every keypress (will slow down sublime)
  - selectors: List of characters that will trigger auto-completion ( if "autocomplete_all" is set to "false" )
  - clang_binary: Location of clang binary (if it is not in the path)
+ - You can copy the whole settings file under your project base folder named as ".clangautocomplete" to have the plugin load those instead of the general settings.
  
 ##License
 DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
