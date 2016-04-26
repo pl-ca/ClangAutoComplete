@@ -5,6 +5,7 @@
 
 import sublime, sublime_plugin, os, ntpath, subprocess, codecs, re, tempfile
 import os.path as path
+from shutil import copyfile
 
 class ClangAutoComplete(sublime_plugin.EventListener):
 
@@ -25,8 +26,6 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		if (self.settings_time == settings_modified_time):
 			return
 
-		settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
-
 		# initialize these to nothing in case they are not present in the variables
 		project_path=""
 		project_name=""
@@ -40,6 +39,13 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			project_name = variables['project_base_name']
 		if ('file' in variables):
 			file_parent_folder = path.join(path.dirname(variables['file']), "..")
+
+		# Load project specific settings if located in project base folder, and with filename ".clangautocomplete"
+		if os.path.isfile(project_path + "/.clangautocomplete"):
+			copyfile(project_path + "/.clangautocomplete", sublime.packages_path() + "/User/ClangAutoCompleteTmp.sublime-settings")
+			settings = sublime.load_settings("ClangAutoCompleteTmp.sublime-settings")
+		else:
+			settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 
 		include_parent_folder = self.to_bool(settings.get("include_file_parent_folder"))
 		self.complete_all = self.to_bool(settings.get("autocomplete_all"))
