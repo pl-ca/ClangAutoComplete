@@ -12,7 +12,7 @@ Sublime Text 3 plugin that offers auto-completion of C/C++ structure members or 
 3. Edit the settings to your needs (in menu `Preferences/Package Settings/ClaugAutoComplete/Settings`). On linux, it looks like clang is having trouble finding standard header files. Here are what I had to include in the plugin settings to make it work on my system.
         
  ```C
-"include_dirs" : [
+ "include_dirs" : [
               "/usr/include/c++/4.4.7/",                      /* Where you find iostream, vector, etc. */
               "/usr/lib/clang/3.4.2/include",                 /* stdbool, etc */
               "/usr/include/c++/4.4.4/x86_64-redhat-linux/",  /* bits folder */
@@ -42,9 +42,6 @@ Here is my C.sublime-settings as an example
                         {
                                 "characters": ">"
                         },
-                        {
-                                "characters": ":"
-                        },
                 ],
                 "extensions":
                 [
@@ -63,6 +60,7 @@ Here is my C.sublime-settings as an example
  - You can copy the whole settings file under your project base folder named as ".clangautocomplete" to have the plugin load those instead of the general settings.
 
 ##Recommended plugins for C development
+Here are some useful plugins I use alongside ClangAutoComplete to have a more complete experience.
 - [CTags: Code navigation, goto definition](https://packagecontrol.io/packages/CTags)
 - [SublimeLinter](https://packagecontrol.io/packages/SublimeLinter) and [SublimeLinter-contrib-clang](https://packagecontrol.io/packages/SublimeLinter-contrib-clang): Errors and warnings highlights. 
  
