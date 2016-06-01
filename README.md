@@ -3,6 +3,8 @@
 
 Sublime Text 3 plugin that offers auto-completion of C/C++ structure members or class attributes and methods.
 
+This plug-in is still maintained, but not very actively. I recommend to consider [EasyClangComplete](https://packagecontrol.io/packages/EasyClangComplete) for more features and frequent updates.
+
 ![Example](example.png)
 
 ##Installation
@@ -69,7 +71,7 @@ DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
 
 Version 2, December 2004
 
-Copyright (C) 2016 Pierre-Louis Caron-Auger [pierre-louis@outlook.com]
+Copyright (C) 2016 Pierre-Louis Caron-Auger
 
 Everyone is permitted to copy and distribute verbatim or modified copies of this license document, and changing it is allowed as long as the name is changed.
 
