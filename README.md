@@ -11,7 +11,12 @@ This plug-in is still maintained, but not very actively. I recommend to consider
 
 1. Install "clang". Note that some people reported issue with clang 3.5.2 when compiled from Cygwin. If you are facing issues on Windows, try to download directly from the official [clang website](http://llvm.org/releases/download.html).
 2. Install from Package Control, or clone this repository and put it in your Sublime's packages directory to install from git.
-3. Edit the settings to your needs (in menu `Preferences/Package Settings/ClaugAutoComplete/Settings`). On linux, it looks like clang is having trouble finding standard header files. Here are what I had to include in the plugin settings to make it work on my system.
+3. Edit the settings to your needs (in menu `Preferences/Package Settings/ClaugAutoComplete/Settings`). 
+
+##Troubleshooting
+If completion does not work, it is almost always because of a problem with the `include_dirs` settings.
+
+1. The standard header files should automatically be located, but if nothing works, you should try to manually add them. Here is what it could look like
         
  ```C
  "include_dirs" : [
@@ -29,7 +34,7 @@ sudo find / -name "stdbool.h"
 sudo find / -name "c++config.h"
  ```
         
-4. Make sure Sublime's own auto-complete settings are properly configured, I've had trouble with mine.
+2. Make sure Sublime's own auto-complete settings are properly configured, I've had trouble with mine.
 Here is my C.sublime-settings as an example
 
 
