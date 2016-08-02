@@ -64,11 +64,29 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			if (self.verbose):
 				print("set std_flag to default: '{}'".format(self.std_flag))
 
+		# Automatically find standard header files on OS X / Linux systems
+		std_headers = []
+		if os.name is not 'nt':
+			# Magical commands that will return the standard header files paths
+			c_headers_cmd=self.clang_binary + " -v -E -xc - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
+			cpp_headers_cmd=self.clang_binary +" -v -E -xc++ - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
+			try:
+				output = subprocess.check_output(c_headers_cmd+";"+cpp_headers_cmd, shell=True)
+				output_text = ''.join(map(chr,output))
+			except subprocess.CalledProcessError as e:
+				output_text = e.output.decode("utf-8")
+			std_headers = output_text.split()
+			for line in std_headers:
+				self.include_dirs.extend(line);
+
 		for i, include_dir in enumerate(self.include_dirs):
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
 			include_dir = re.sub("(\$project_name)", project_name, include_dir)
 			include_dir = os.path.abspath(include_dir)
 			self.include_dirs[i] = include_dir
+
+		# Prepend standard headers (if anything to prepend) to the custom include directories
+		self.include_dirs = std_headers + self.include_dirs
 
 		if (self.verbose):
 			print("project_base_name = {}".format(project_name))
