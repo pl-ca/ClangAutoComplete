@@ -1,4 +1,4 @@
-ClangAutoComplete version 2.0.5
+ClangAutoComplete version 2.1.0
 
 On Linux and OS X, the plugin will attempt to find automatically the standard header files. They should therefore not have to be manually added to the "include_dir" settings. On Windows, as far as I know there is no such issue.
 

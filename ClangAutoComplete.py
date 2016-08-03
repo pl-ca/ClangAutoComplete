@@ -17,6 +17,15 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 	def to_bool(self, str_flag):
 		return str_flag == "true"
 
+	# Returns an array of string which correspond to each line of the stdout of the shell command
+	def run_shell_command(self, cmd=""):
+		try:
+			output = subprocess.check_output(cmd, shell=True)
+			output_text = ''.join(map(chr,output))
+		except subprocess.CalledProcessError as e:
+			output_text = e.output.decode("utf-8")
+		return output_text.splitlines()
+
 	def load_settings(self):
 		# Only load the settings if they have changed
 		settings_modified_time = path.getmtime(
@@ -66,18 +75,11 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 
 		# Automatically find standard header files on OS X / Linux systems
 		std_headers = []
-		if os.name is not 'nt':
+		if os.name != 'nt':
 			# Magical commands that will return the standard header files paths
 			c_headers_cmd=self.clang_binary + " -v -E -xc - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
 			cpp_headers_cmd=self.clang_binary +" -v -E -xc++ - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
-			try:
-				output = subprocess.check_output(c_headers_cmd+";"+cpp_headers_cmd, shell=True)
-				output_text = ''.join(map(chr,output))
-			except subprocess.CalledProcessError as e:
-				output_text = e.output.decode("utf-8")
-			std_headers = output_text.split()
-			for line in std_headers:
-				self.include_dirs.extend(line);
+			std_headers = self.run_shell_command(c_headers_cmd+";"+cpp_headers_cmd)
 
 		for i, include_dir in enumerate(self.include_dirs):
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
@@ -148,17 +150,12 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		for dir in self.include_dirs:
 			clang_includes += " -I " + dir
 
-		# Execute clang command, exit 0 to suppress error from check_output()
+		# Execute clang command
 		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes
 		if (self.verbose):
 			print("clang command: {}".format(clang_cmd))
-		try:
-			output = subprocess.check_output(clang_cmd, shell=True)
-			output_text = ''.join(map(chr,output))
-		except subprocess.CalledProcessError as e:
-			output_text = e.output.decode("utf-8")
+		output_lines = self.run_shell_command(clang_cmd)
 		# Process clang output, find COMPLETION lines and return them with a little formating
-		output_lines = output_text.splitlines()
 		result = []
 		longest_len = 0
 		for line in output_lines:

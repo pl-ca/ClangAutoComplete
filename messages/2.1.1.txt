@@ -1,0 +1,3 @@
+ClangAutoComplete version 2.1.1
+
+Minor code improvement and bug fix where we attempted to run a unix shell command on windows.
