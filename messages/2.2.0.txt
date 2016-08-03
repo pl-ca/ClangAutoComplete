@@ -1,0 +1,3 @@
+ClangAutoComplete version 2.2.0
+
+Added a debug flag in the settings that can be used to find precisely why the completion is not working.
