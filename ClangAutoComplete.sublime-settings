@@ -28,6 +28,13 @@
 	"verbose" : "false",
 
 	/*
+	 * Whenever debug flag is set to true, open an output panel
+	 * with the output of the clang command to help the user understand
+	 * what is the issue preventing auto completion.
+	 */
+	"debug"   : "false",
+
+	/*
 	 * if include_file_parent_folder is set to true, the parent folder of the
 	 * current file will be included to clang call with -I flag. Don't worry, it
 	 * doesn't ruin anything. It will not be included if this flag is set to

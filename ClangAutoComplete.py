@@ -67,6 +67,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		self.include_dirs     = settings.get("include_dirs")
 		self.clang_binary     = settings.get("clang_binary")
 		self.std_flag         = settings.get("std_flag")
+		self.debug            = self.to_bool(settings.get("debug"))
 
 		if (not self.std_flag):
 			self.std_flag = "-std=c++11"
@@ -151,10 +152,13 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			clang_includes += " -I " + dir
 
 		# Execute clang command
-		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes
+		clang_cmd = clang_bin + " " + clang_flags + " " + clang_target + clang_includes + " 2>&1"
 		if (self.verbose):
 			print("clang command: {}".format(clang_cmd))
 		output_lines = self.run_shell_command(clang_cmd)
+		if (self.debug):
+			view.run_command("clangautocompleteoutputpanel", {"output_lines_arr" : output_lines})
+
 		# Process clang output, find COMPLETION lines and return them with a little formating
 		result = []
 		longest_len = 0
@@ -171,3 +175,12 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 		return (result, sublime.INHIBIT_WORD_COMPLETIONS)
 
 
+# Create an output panel to display some text
+class ClangautocompleteoutputpanelCommand(sublime_plugin.TextCommand):
+	def run(self, edit, output_lines_arr):
+		output_view = self.view.window().get_output_panel("clangautocomplete")
+		output_view.set_read_only(False)
+		region = sublime.Region(0, output_view.size())
+		output_view.erase(edit, region)
+		output_view.insert(edit, 0, '\n'.join(output_lines_arr))
+		self.view.window().run_command("show_panel", {"panel": "output.clangautocomplete"})
