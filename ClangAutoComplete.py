@@ -57,6 +57,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			settings = sublime.load_settings("ClangAutoComplete.sublime-settings")
 
 		include_parent_folder = self.to_bool(settings.get("include_file_parent_folder"))
+		exclude_system_folders = self.to_bool(settings.get("exclude_system_folders"))
 		self.complete_all = self.to_bool(settings.get("autocomplete_all"))
 		self.verbose = self.to_bool(settings.get("verbose"))
 		self.tmp_file_path = settings.get("tmp_file_path")
@@ -89,7 +90,8 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			self.include_dirs[i] = include_dir
 
 		# Prepend standard headers (if anything to prepend) to the custom include directories
-		self.include_dirs = std_headers + self.include_dirs
+		if (not exclude_system_folders):
+			self.include_dirs = std_headers + self.include_dirs
 
 		if (self.verbose):
 			print("project_base_name = {}".format(project_name))

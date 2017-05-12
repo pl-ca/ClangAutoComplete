@@ -42,6 +42,13 @@
 	 */
 	"include_file_parent_folder" : "false",
 
+	/*
+	 * If exclude_system_folders is set to true, the system include folders
+	 * will be excluded from clang call in -I flags.
+	 * This setting is for embedded projects, like Linux kernel or baremetal.
+	 */
+	"exclude_system_folders" : "false",
+
 	/* Allow to change the binary or location of clang program */
 	// "clang_binary" : "\"C:\\Program Files (x86)\\LLVM\\bin\\clang++\""
 	"clang_binary" : "clang++",
