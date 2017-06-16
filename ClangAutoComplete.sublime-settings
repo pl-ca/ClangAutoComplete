@@ -36,11 +36,17 @@
 
 	/*
 	 * if include_file_parent_folder is set to true, the parent folder of the
-	 * current file will be included to clang call with -I flag. Don't worry, it
+	 * current file directory will be included to clang call with -I flag. Don't worry, it
 	 * doesn't ruin anything. It will not be included if this flag is set to
 	 * false.
 	 */
 	"include_file_parent_folder" : "false",
+	/*
+	 * If include_file_current_folder is set to true, the folder
+	 * of where the current file is located will be added to the -I included
+	 * directories.
+	 */
+	"include_file_current_folder" : "false", 
 
 	/*
 	 * If exclude_system_folders is set to true, the system include folders
