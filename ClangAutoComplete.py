@@ -84,7 +84,7 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			# Magical commands that will return the standard header files paths
 			c_headers_cmd=self.clang_binary + " -v -E -xc - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
 			cpp_headers_cmd=self.clang_binary +" -v -E -xc++ - < /dev/null 2>&1 | sed -n '/#include <...> search starts here:/{:a;n;/End of search list/b;p;ba}'"
-			std_headers = self.run_shell_command(c_headers_cmd+";"+cpp_headers_cmd)
+			std_headers = self.run_shell_command(cpp_headers_cmd+";"+c_headers_cmd)
 
 		for i, include_dir in enumerate(self.include_dirs):
 			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
