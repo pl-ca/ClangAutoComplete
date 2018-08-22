@@ -17,7 +17,7 @@
 	"autocomplete_all" : "false",
 	/*
 	 * if autocomplete_all is set to false,
-	 * What triggers auto-completion process (should be same as sublime's own settings 
+	 * What triggers auto-completion process (should be the same as sublime's own settings) 
 	 */
 	"selectors" : [ ">","."],
 
