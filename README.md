@@ -1,9 +1,10 @@
 # ClangAutoComplete
 =================
 
-Sublime Text 3 plugin that offers auto-completion of C/C++ structure members or class attributes and methods.
+**This plug-in is not maintained anymore**. 
+I recommend to consider [EasyClangComplete](https://packagecontrol.io/packages/EasyClangComplete) for more features and frequent updates.
 
-This plug-in is still maintained, but not very actively. I recommend to consider [EasyClangComplete](https://packagecontrol.io/packages/EasyClangComplete) for more features and frequent updates.
+Sublime Text 3 plugin that offers auto-completion of C/C++ structure members or class attributes and methods.
 
 ![Example](example.png)
 
