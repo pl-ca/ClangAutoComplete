@@ -87,8 +87,10 @@ class ClangAutoComplete(sublime_plugin.EventListener):
 			std_headers = self.run_shell_command(cpp_headers_cmd+";"+c_headers_cmd)
 
 		for i, include_dir in enumerate(self.include_dirs):
-			include_dir = re.sub("(\$project_base_path)", project_path, include_dir)
-			include_dir = re.sub("(\$project_name)", project_name, include_dir)
+			# plain replace: project_path is not a regex replacement template
+			# (a Windows path like C:\Users\... made re.sub raise "bad escape \U")
+			include_dir = include_dir.replace("$project_base_path", project_path)
+			include_dir = include_dir.replace("$project_name", project_name)
 			include_dir = os.path.abspath(include_dir)
 			self.include_dirs[i] = include_dir
 
